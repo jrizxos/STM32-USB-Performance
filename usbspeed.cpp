@@ -4,12 +4,10 @@
 #include <libusb-1.0/libusb.h>
 using namespace std;
 
-void printdev(libusb_device *dev); //prototype, prints device ids and interfaces
-int recieve(libusb_device_handle* dev_handle, int packet_length, int packet_limit);
-int readprint(libusb_device_handle* dev_handle, int packet_length, int packet_limit);
-int readmeasure(libusb_device_handle* dev_handle, int packet_length, int packet_limit);
-int checkpackets(unsigned char** data_array, int packet_length, int list_length);
-unsigned char lfsr(unsigned char state);
+void printdev(libusb_device* dev);
+int recieve(libusb_device_handle* dev_handle, int msg_length, int msg_limit);
+int readprint(libusb_device_handle* dev_handle, int msg_length, int msg_limit);
+int readmeasure(libusb_device_handle* dev_handle, int msg_length, int msg_limit);
 int cobsdecode(unsigned char* buffer, int length, unsigned char* data);
 
 int main() {
@@ -71,10 +69,10 @@ int main() {
 	}
 	cout << "Claimed Interface 1." << endl;
 
-	//read data
-	//r = readprint(dev_handle, 100000, 1);
-	r = readmeasure(dev_handle, 50000, 2000);
-	//r = recieve(dev_handle, 50000, 2000);
+	// read data using only one of the following methods
+	//r = readprint(dev_handle, 1023, 2);   // reads an prints every message until limit, be careful with printing long messages! (suitable for continous transmit)
+	//r = readmeasure(dev_handle, 1023, 2);	// reads every message until limit then calculates and prints performance stats (suitable for continous transmit)
+	r = recieve(dev_handle, 50000, 2);		// receives messages that contain COBS encoded packets (suitable for continous transmit optimized)
 	
 	//release the claimed interfaces, and close the device
 	libusb_release_interface(dev_handle, 0); 
@@ -84,32 +82,39 @@ int main() {
 	return r;
 }
 
-int recieve(libusb_device_handle* dev_handle, int packet_length, int packet_limit){
-	int actual, r;										//read byte counter
-	time_t start_time, end_time;						//time counters
+/**
+  * @brief Receives messages containing COBS encoded packets, prints performance stats
+  * @param dev_handle: pointer to device
+  * @param msg_length: max message length to read
+  * @param msg_limit: maximum ammount of messages to read
+  * @retval 0 is OK, >0 is error
+  */
+int recieve(libusb_device_handle* dev_handle, int msg_length, int msg_limit){
+	int actual, r;											//read byte counter
+	time_t start_time, end_time;							//time counters
 	double timer;
-	int packet_count = 0;								//number of packets we recieved
-	int empty_packets = 0;								//number of empty packets (when packet length = 64 one empty is send after)
-	const unsigned int timeout = 100000u;				//max time to read a message (ms)
-	const unsigned char endpoint = 129u;				//endpoint address to read from
-	unsigned char* data = new unsigned char[packet_length];	//data to read buffer 
+	int msg_count = 0;										//number of messages we recieved
+	int empty_packets = 0;									//number of empty packets
+	const unsigned int timeout = 100000u;					//max time to read a message (ms)
+	const unsigned char endpoint = 129u;					//endpoint address to read from
+	unsigned char* data = new unsigned char[msg_length];	//buffer to store read data 
 
 	int array_idx = 0;
-	unsigned char* data_array = new unsigned char[packet_length*packet_limit];
+	unsigned char* data_array = new unsigned char[msg_length*msg_limit];
 	
 	cout << "Recieving Data..." << endl << endl;
 	time(&start_time);
 	//read loop
-	while(packet_count < packet_limit){
+	while(msg_count < msg_limit){
 		//read data, transfer direction is decided by endpoint properties, here it's an IN endpoint
-		r = libusb_bulk_transfer(dev_handle, endpoint, data, packet_length, &actual, timeout);
+		r = libusb_bulk_transfer(dev_handle, endpoint, data, msg_length, &actual, timeout);
 		//if it is a valid message store it
 		if(r == 0){
-			cout << '\r' << std::setw(6) << std::setfill('0') << packet_count << std::flush;
+			cout << '\r' << std::setw(6) << std::setfill('0') << msg_count << std::flush;
 			for(int i = 0; i < actual; i++, array_idx++){
 				data_array[array_idx] = data[i];
 			}
-			packet_count++;
+			msg_count++;
 		}
 		//else print error and stop reading
 		else{
@@ -124,10 +129,11 @@ int recieve(libusb_device_handle* dev_handle, int packet_length, int packet_limi
 	}
 	time(&end_time);
 
+	// decode COBS and count received bytes
 	int size = 0;
 	int prev = 0;
 	int total = 0;
-	unsigned char* temp = new unsigned char[packet_length];
+	unsigned char* temp = new unsigned char[msg_length];
 	for(int i = 0; i < array_idx; i++){
 		if(data_array[i] == 0){
 			actual = cobsdecode((unsigned char*)data_array + prev, size, temp);
@@ -138,11 +144,10 @@ int recieve(libusb_device_handle* dev_handle, int packet_length, int packet_limi
 		else size++;
 	}
 
+	// print performance stats
 	timer = difftime(end_time, start_time);
 	cout << endl << "Transmision ended." << endl;
 	cout << "Time : " << timer << " seconds." << endl;
-	//cout << "Packet length (max) : " << packet_length << endl;
-	//cout << "Packets read : " << packet_count << endl;
 	cout << "Total data : " << total << " bytes." << endl;
 	cout << "(Empty packets : " << empty_packets << ")" << endl;
 	cout << "--------------------------------------------------" << endl;
@@ -152,18 +157,25 @@ int recieve(libusb_device_handle* dev_handle, int packet_length, int packet_limi
 	return 0;
 }
 
+/**
+  * @brief Decodes a COBS encoded packet
+  * @param buffer: input buffer
+  * @param length: length of data in input buffer
+  * @param data: output buffer to store decoded data
+  * @retval number of bytes decoded 
+  */
 int cobsdecode(unsigned char* buffer, int length, unsigned char* data){
-	const uint8_t* byte = buffer; // Encoded input byte pointer
-	uint8_t* decode = (uint8_t*)data; // Decoded output byte pointer
+	const uint8_t* byte = buffer;		// Encoded input byte pointer
+	uint8_t* decode = (uint8_t*)data;	// Decoded output byte pointer
 
 	for(uint8_t code = 0xff, block = 0; byte < buffer + length; --block){
-		if(block) // Decode block byte
+		if(block)						// Decode block byte
 			*decode++ = *byte++;
 		else{
-			if(code != 0xff) // Encoded zero, write it
+			if(code != 0xff)			// Encoded zero, write it
 				*decode++ = 0;
-			block = code = *byte++; // Next block length
-			if(!code) // Delimiter code found
+			block = code = *byte++;		// Next block length
+			if(!code)					// Delimiter code found
 				break;
 		}
 	}
@@ -171,26 +183,34 @@ int cobsdecode(unsigned char* buffer, int length, unsigned char* data){
 	return (int)(decode - (uint8_t*)data);
 }
 
-int readprint(libusb_device_handle* dev_handle, int packet_length, int packet_limit){
-	int actual, r;										//read byte counter
-	int packet_count = 0;								//number of packets we recieved
-	int empty_packets = 0;								//number of empty packets (when packet length = 64 one empty is send after)
-	const unsigned int timeout = 10000u;				//max time to read a message (ms)
-	const unsigned char endpoint = 129u;				//endpoint address to read from
-	unsigned char* data = new unsigned char[packet_length];	//data to read buffer 
+
+/**
+  * @brief Reads messages and prints them as base 10 bytes, be careful with printing long messages!
+  * @param dev_handle: pointer to device
+  * @param msg_length: max message length to read
+  * @param msg_limit: maximum ammount of messages to read
+  * @retval 0 is OK, >0 is error
+  */
+int readprint(libusb_device_handle* dev_handle, int msg_length, int msg_limit){
+	int actual, r;											//read byte counter
+	int msg_count = 0;										//number of messages we recieved
+	int empty_packets = 0;									//number of empty packets (when packet length = 64 one empty is send after)
+	const unsigned int timeout = 10000u;					//max time to read a message (ms)
+	const unsigned char endpoint = 129u;					//endpoint address to read from
+	unsigned char* data = new unsigned char[msg_length];	//data to read buffer 
 
 	cout << "Reading Data..." << endl << endl;
 	//read loop
-	while (packet_count < packet_limit){
+	while (msg_count < msg_limit){
 		//read data, transfer direction is decided by endpoint properties, here it's an IN endpoint
-		r = libusb_bulk_transfer(dev_handle, endpoint, data, packet_length, &actual, timeout);
+		r = libusb_bulk_transfer(dev_handle, endpoint, data, msg_length, &actual, timeout);
 		//if it is a valid message print it
-		if (r == 0 && actual == packet_length){
-			cout << packet_count << "("<< actual << "): " << endl;
-			/*for(int i = 0; i < packet_length; i++){
+		if (r == 0 && actual == msg_length){
+			cout << msg_count << "("<< actual << "): " << endl;
+			for(int i = 0; i < msg_length; i++){
 				cout << (int)data[i] << " ";
-			}*/
-			packet_count++;
+			}
+			msg_count++;
 			cout << endl << endl;
 		}
 		//else print error and stop reading
@@ -208,33 +228,41 @@ int readprint(libusb_device_handle* dev_handle, int packet_length, int packet_li
 	return 0;
 }
 
-int readmeasure(libusb_device_handle* dev_handle, int packet_length, int packet_limit){
-	int actual, r;										//read byte counter
-	time_t start_time, end_time;						//time counters
+
+/**
+  * @brief Reads messages and prints performance stats
+  * @param dev_handle: pointer to device
+  * @param msg_length: max message length to read
+  * @param msg_limit: maximum ammount of messages to read
+  * @retval 0 is OK, >0 is error
+  */
+int readmeasure(libusb_device_handle* dev_handle, int msg_length, int msg_limit){
+	int actual, r;												//read byte counter
+	time_t start_time, end_time;								//time counters
 	double timer;
-	int packet_count = 0;								//number of packets we recieved
-	int empty_packets = 0;								//number of empty packets
-	const unsigned int timeout = 100u;				//max time to read a message (ms)
-	const unsigned char endpoint = 129u;				//endpoint address to read from
-	unsigned char* data = new unsigned char[packet_length];	//data to read buffer 
+	int msg_count = 0;											//number of messages we recieved
+	int empty_packets = 0;										//number of empty packets
+	const unsigned int timeout = 10000u;						//max time to read a message (ms)
+	const unsigned char endpoint = 129u;						//endpoint address to read from
+	unsigned char* data = new unsigned char[msg_length];		//data to read buffer 
 	//allocate memory to keep all read packets so we can check them after the transmission
-	unsigned char** data_array = new unsigned char*[packet_limit];
-	for (int i = 0; i < packet_limit; i++)
-		data_array[i] = new unsigned char[packet_length];
+	unsigned char** data_array = new unsigned char*[msg_limit];
+	for (int i = 0; i < msg_limit; i++)
+		data_array[i] = new unsigned char[msg_length];
 	
 	cout << "Reading Data..." << endl ;
 	time(&start_time);
 	//read loop
-	while (packet_count < packet_limit) {
+	while (msg_count < msg_limit) {
 		//read data, transfer direction is decided by endpoint properties, here it's an IN endpoint
-		r = libusb_bulk_transfer(dev_handle, endpoint, data, packet_length, &actual, timeout);
+		r = libusb_bulk_transfer(dev_handle, endpoint, data, msg_length, &actual, timeout);
 		//if it is a valid message add it to the array
-		if (r == 0 && actual == packet_length) {
-			cout << '\r' << std::setw(6) << std::setfill('0') << packet_count << std::flush;
-			/*for(int i = 0; i < packet_length; i++) {
-				data_array[packet_count][i] = data[i];
+		if (r == 0 && actual == msg_length) {
+			cout << '\r' << std::setw(6) << std::setfill('0') << msg_count << std::flush;
+			/*for(int i = 0; i < msg_length; i++) {
+				data_array[msg_count][i] = data[i];
 			}*/
-			packet_count++;
+			msg_count++;
 		}
 		//else print error and stop reading
 		else {
@@ -247,61 +275,27 @@ int readmeasure(libusb_device_handle* dev_handle, int packet_length, int packet_
 			return 1;
 		}
 	}
+
+	// print performance stats
 	time(&end_time);
 	timer = difftime(end_time, start_time);
 	cout << endl << "Transmision ended." << endl;
 	cout << "Time : " << timer << " seconds." << endl;
-	cout << "Packet length : " << packet_length << endl;
-	cout << "Packets read : " << packet_count << endl;
+	cout << "Packet length : " << msg_length << endl;
+	cout << "Packets read : " << msg_count << endl;
 	cout << "(Empty packets : " << empty_packets << ")" << endl;
-	//r = checkpackets(data_array, packet_length, packet_limit - 1);
-	//cout << "Correct packets : " << r << endl;
 	cout << "--------------------------------------------------" << endl;
-	cout << "Bandwidth : " << (packet_limit * (double)packet_length) / timer << " bytes/sec." << endl;
-	//cout << "Cpu usage : " << data[5] << data[6] << "." << data[7] << data[8] << "%" << endl;
+	cout << "Bandwidth : " << (msg_limit * (double)msg_length) / timer << " bytes/sec." << endl;
 	cout << "--------------------------------------------------" << endl;
 
 	return 0;
 }
 
-unsigned char lfsr(unsigned char state) {
-  unsigned char bit = (state ^ (state >> 2) ^ (state >> 3) ^ (state >> 4)) & 1;
-	return (state >> 1) | (bit << 7);
-}
-
-int checkpackets(unsigned char** data_array, int packet_length, int list_length){
-	int j;
-	int correct = 1;
-	int failed = 0;
-	unsigned char* previous = data_array[0];
-	unsigned char* current;
-	unsigned char state = 149u;
-
-	for(int i = 1; i < list_length; i++){										//for every packet recieved
-		current = data_array[i];
-		if(state != current[packet_length - 1]){								//check if lfsr included is valid
-			failed++;															//if not the packet has an error in the last byte
-			//cout << (int)state << " != " << (int)current[packet_length - 1] << endl;
-		}
-		else{																	//if lfsr is ok
-			for (j = 0; j < packet_length-1; j++){								//for every byte in the packet
-				if((current[j] ^ current[packet_length - 1]) != previous[j]){	//XOR it with the included lfsr and compare it with the previous message
-					failed++;
-					break;
-				}
-			}
-			if(j == packet_length - 1)											//if we reached the end of the packet iteration loop
-				correct++;														//the packet is valid
-		}
-		previous = current;
-		state = lfsr(state);
-	}
-	if(failed){
-		cout << failed << " invalid packetes during check!" << endl;			//warn user about failed packets
-	}
-	return correct;
-}
-
+/**
+  * @brief Prints info about the device
+  * @param dev: pointer to device
+  * @retval None
+  */
 void printdev(libusb_device *dev) {
 	libusb_device_descriptor desc;
 	int r = libusb_get_device_descriptor(dev, &desc);
