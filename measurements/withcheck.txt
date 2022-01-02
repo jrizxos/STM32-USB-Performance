@@ -1,0 +1,95 @@
+Time : 86 seconds.
+Packet length : 63
+Packets read : 200000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 146512 bytes/sec.
+--------------------------------------------------
+
+Time : 105 seconds.
+Packet length : 64
+Packets read : 200000
+(Empty packets : 199999)
+--------------------------------------------------
+Bandwidth : 121905 bytes/sec.
+--------------------------------------------------
+
+Time : 74 seconds.
+Packet length : 511
+Packets read : 70000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 483378 bytes/sec.
+--------------------------------------------------
+
+Time : 78 seconds.
+Packet length : 512
+Packets read : 70000
+(Empty packets : 69999)
+--------------------------------------------------
+Bandwidth : 459487 bytes/sec.
+--------------------------------------------------
+
+Time : 66 seconds.
+Packet length : 1023
+Packets read : 40000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 620000 bytes/sec.
+--------------------------------------------------
+
+Time : 69 seconds.
+Packet length : 1024
+Packets read : 40000
+(Empty packets : 39999)
+--------------------------------------------------
+Bandwidth : 593623 bytes/sec.
+--------------------------------------------------
+
+Time : 64 seconds.
+Packet length : 4096
+Packets read : 10000
+(Empty packets : 9999)
+--------------------------------------------------
+Bandwidth : 640000 bytes/sec.
+--------------------------------------------------
+
+Time : 63 seconds.
+Packet length : 10000
+Packets read : 5000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 793651 bytes/sec.
+--------------------------------------------------
+
+Time : 72 seconds.
+Packet length : 20000
+Packets read : 3000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 833333 bytes/sec.
+--------------------------------------------------
+
+Time : 106 seconds.
+Packet length : 30000
+Packets read : 3000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 849057 bytes/sec.
+--------------------------------------------------
+
+Time : 142 seconds.
+Packet length : 40000
+Packets read : 3000
+(Empty packets : 2999)
+--------------------------------------------------
+Bandwidth : 845070 bytes/sec.
+--------------------------------------------------
+
+Time : 119 seconds.
+Packet length : 50000
+Packets read : 2000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 840336 bytes/sec.
+--------------------------------------------------

@@ -1,0 +1,7 @@
+Transmision ended.
+Time : 117 seconds.
+Total data : 98226176 bytes.
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 839540 bytes/sec.
+--------------------------------------------------

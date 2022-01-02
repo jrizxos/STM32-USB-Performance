@@ -1,0 +1,550 @@
+Workload : DMA
+Time : 76 seconds.
+Packet length : 63
+Packets read : 200000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 165789 bytes/sec.
+--------------------------------------------------
+
+Workload : Copy
+Time : 77 seconds.
+Packet length : 63
+Packets read : 200000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 163636 bytes/sec.
+--------------------------------------------------
+
+Workload : XOR
+Time : 76 seconds.
+Packet length : 63
+Packets read : 200000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 165789 bytes/sec.
+--------------------------------------------------
+
+Workload : COBS
+Time : 77 seconds.
+Packet length : 63
+Packets read : 200000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 163636 bytes/sec.
+--------------------------------------------------
+
+Workload : Rand
+Time : 78 seconds.
+Packet length : 63
+Packets read : 10000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 8077 bytes/sec.
+--------------------------------------------------
+
+
+Workload : DMA
+Time : 97 seconds.
+Packet length : 64
+Packets read : 200000
+(Empty packets : 199999)
+--------------------------------------------------
+Bandwidth : 131959 bytes/sec.
+--------------------------------------------------
+
+Workload : Copy
+Time : 99 seconds.
+Packet length : 64
+Packets read : 200000
+(Empty packets : 199999)
+--------------------------------------------------
+Bandwidth : 129293 bytes/sec.
+--------------------------------------------------
+
+Workload : XOR
+Time : 100 seconds.
+Packet length : 64
+Packets read : 200000
+(Empty packets : 199999)
+--------------------------------------------------
+Bandwidth : 128000 bytes/sec.
+--------------------------------------------------
+
+Workload : COBS
+Time : 99 seconds.
+Packet length : 64
+Packets read : 200000
+(Empty packets : 199999)
+--------------------------------------------------
+Bandwidth : 129293 bytes/sec.
+--------------------------------------------------
+
+Workload : Rand
+Time : 79 seconds.
+Packet length : 64
+Packets read : 10000
+(Empty packets : 9999)
+--------------------------------------------------
+Bandwidth : 8101 bytes/sec.
+--------------------------------------------------
+
+
+Workload : DMA
+Time : 72 seconds.
+Packet length : 511
+Packets read : 70000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 496806 bytes/sec.
+--------------------------------------------------
+
+Workload : Copy
+Time : 72 seconds.
+Packet length : 511
+Packets read : 70000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 496806 bytes/sec.
+--------------------------------------------------
+
+Workload : XOR
+Time : 72 seconds.
+Packet length : 511
+Packets read : 70000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 496806 bytes/sec.
+--------------------------------------------------
+
+Workload : COBS
+Time : 72 seconds.
+Packet length : 511
+Packets read : 70000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 496806 bytes/sec.
+--------------------------------------------------
+
+Workload : Rand
+Time : 78 seconds.
+Packet length : 511
+Packets read : 10000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 65513 bytes/sec.
+--------------------------------------------------
+
+
+Workload : DMA
+Time : 75 seconds.
+Packet length : 512
+Packets read : 70000
+(Empty packets : 69999)
+--------------------------------------------------
+Bandwidth : 477867 bytes/sec.
+--------------------------------------------------
+
+Workload : Copy
+Time : 77 seconds.
+Packet length : 512
+Packets read : 70000
+(Empty packets : 69999)
+--------------------------------------------------
+Bandwidth : 465455 bytes/sec.
+--------------------------------------------------
+
+Workload : XOR
+Time : 76 seconds.
+Packet length : 512
+Packets read : 70000
+(Empty packets : 69999)
+--------------------------------------------------
+Bandwidth : 471579 bytes/sec.
+--------------------------------------------------
+
+Workload : COBS
+Packet length : 512
+Packets read : 70000
+(Empty packets : 69999)
+--------------------------------------------------
+Bandwidth : 453671 bytes/sec.
+--------------------------------------------------
+
+Workload : Rand
+Time : 79 seconds.
+Packet length : 512
+Packets read : 10000
+(Empty packets : 9999)
+--------------------------------------------------
+Bandwidth : 64810 bytes/sec.
+--------------------------------------------------
+
+
+Workload : DMA
+Time : 65 seconds.
+Packet length : 1023
+Packets read : 40000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 629538 bytes/sec.
+--------------------------------------------------
+
+Workload : Copy
+Time : 67 seconds.
+Packet length : 1023
+Packets read : 40000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 610746 bytes/sec.
+--------------------------------------------------
+
+Workload : XOR
+Time : 66 seconds.
+Packet length : 1023
+Packets read : 40000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 620000 bytes/sec.
+--------------------------------------------------
+
+Workload : COBS
+Time : 66 seconds.
+Packet length : 1023
+Packets read : 40000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 620000 bytes/sec.
+--------------------------------------------------
+
+Workload : Rand
+Time : 78 seconds.
+Packet length : 1023
+Packets read : 10000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 131154 bytes/sec.
+--------------------------------------------------
+
+
+Workload : DMA
+Time : 67 seconds.
+Packet length : 1024
+Packets read : 40000
+(Empty packets : 39999)
+--------------------------------------------------
+Bandwidth : 611343 bytes/sec.
+--------------------------------------------------
+
+Workload : Copy
+Time : 67 seconds.
+Packet length : 1024
+Packets read : 40000
+(Empty packets : 39999)
+--------------------------------------------------
+Bandwidth : 611343 bytes/sec.
+--------------------------------------------------
+
+Workload : XOR
+Time : 70 seconds.
+Packet length : 1024
+Packets read : 40000
+(Empty packets : 39999)
+--------------------------------------------------
+Bandwidth : 585143 bytes/sec.
+--------------------------------------------------
+
+Workload : COBS
+Time : 68 seconds.
+Packet length : 1024
+Packets read : 40000
+(Empty packets : 39999)
+--------------------------------------------------
+Bandwidth : 602353 bytes/sec.
+--------------------------------------------------
+
+Workload : Rand
+Time : 78 seconds.
+Packet length : 1024
+Packets read : 10000
+(Empty packets : 9999)
+--------------------------------------------------
+Bandwidth : 131282 bytes/sec.
+--------------------------------------------------
+
+
+Workload : DMA
+Time : 60 seconds.
+Packet length : 4096
+Packets read : 10000
+(Empty packets : 9999)
+--------------------------------------------------
+Bandwidth : 682667 bytes/sec.
+--------------------------------------------------
+
+Workload : Copy
+Time : 62 seconds.
+Packet length : 4096
+Packets read : 10000
+(Empty packets : 9999)
+--------------------------------------------------
+Bandwidth : 660645 bytes/sec.
+--------------------------------------------------
+
+Workload : XOR
+Time : 61 seconds.
+Packet length : 4096
+Packets read : 10000
+(Empty packets : 9999)
+--------------------------------------------------
+Bandwidth : 671475 bytes/sec.
+--------------------------------------------------
+
+Workload : COBS
+Time : 61 seconds.
+Packet length : 4096
+Packets read : 10000
+(Empty packets : 9999)
+--------------------------------------------------
+Bandwidth : 671475 bytes/sec.
+--------------------------------------------------
+
+Workload : Rand
+Time : 83 seconds.
+Packet length : 4096
+Packets read : 10000
+(Empty packets : 9999)
+--------------------------------------------------
+Bandwidth : 493494 bytes/sec.
+--------------------------------------------------
+
+
+Workload : DMA
+Time : 64 seconds.
+Packet length : 10000
+Packets read : 5000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 781250 bytes/sec.
+--------------------------------------------------
+
+Workload : Copy
+Time : 64 seconds.
+Packet length : 10000
+Packets read : 5000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 781250 bytes/sec.
+--------------------------------------------------
+
+Workload : XOR
+Time : 64 seconds.
+Packet length : 10000
+Packets read : 5000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 781250 bytes/sec.
+--------------------------------------------------
+
+Workload : COBS
+Time : 64 seconds.
+Packet length : 10000
+Packets read : 5000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 781250 bytes/sec.
+--------------------------------------------------
+
+Workload : Rand
+Time : 125 seconds.
+Packet length : 10000
+Packets read : 10000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 800000 bytes/sec.
+--------------------------------------------------
+
+
+Workload : DMA
+Time : 72 seconds.
+Packet length : 20000
+Packets read : 3000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 833333 bytes/sec.
+--------------------------------------------------
+
+Workload : Copy
+Time : 74 seconds.
+Packet length : 20000
+Packets read : 3000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 810811 bytes/sec.
+--------------------------------------------------
+
+Workload : XOR
+Time : 73 seconds.
+Packet length : 20000
+Packets read : 3000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 821918 bytes/sec.
+--------------------------------------------------
+
+Workload : COBS
+Transmision ended.
+Time : 72 seconds.
+Packet length : 20000
+Packets read : 3000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 833333 bytes/sec.
+--------------------------------------------------
+
+Workload : Rand
+Time : 118 seconds.
+Packet length : 20000
+Packets read : 5000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 847458 bytes/sec.
+--------------------------------------------------
+
+
+Workload : DMA
+Time : 109 seconds.
+Packet length : 30000
+Packets read : 3000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 825688 bytes/sec.
+--------------------------------------------------
+
+Workload : Copy
+Time : 108 seconds.
+Packet length : 30000
+Packets read : 3000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 833333 bytes/sec.
+--------------------------------------------------
+
+Workload : XOR
+Time : 108 seconds.
+Packet length : 30000
+Packets read : 3000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 833333 bytes/sec.
+--------------------------------------------------
+
+Workload : COBS
+Time : 107 seconds.
+Packet length : 30000
+Packets read : 3000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 841121 bytes/sec.
+--------------------------------------------------
+
+Workload : Rand
+Time : 69 seconds.
+Packet length : 30000
+Packets read : 2000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 869565 bytes/sec.
+--------------------------------------------------
+
+
+Workload : DMA
+Time : 143 seconds.
+Packet length : 40000
+Packets read : 3000
+(Empty packets : 2999)
+--------------------------------------------------
+Bandwidth : 839161 bytes/sec.
+--------------------------------------------------
+
+Workload : Copy
+Time : 142 seconds.
+Packet length : 40000
+Packets read : 3000
+(Empty packets : 2999)
+--------------------------------------------------
+Bandwidth : 845070 bytes/sec.
+--------------------------------------------------
+
+Workload : XOR
+Time : 142 seconds.
+Packet length : 40000
+Packets read : 3000
+(Empty packets : 2999)
+--------------------------------------------------
+Bandwidth : 845070 bytes/sec.
+--------------------------------------------------
+
+Workload : COBS
+Time : 142 seconds.
+Packet length : 40000
+Packets read : 3000
+(Empty packets : 2999)
+--------------------------------------------------
+Bandwidth : 845070 bytes/sec.
+--------------------------------------------------
+
+Workload : Rand
+Time : 94 seconds.
+Packet length : 40000
+Packets read : 2000
+(Empty packets : 1999)
+--------------------------------------------------
+Bandwidth : 851064 bytes/sec.
+--------------------------------------------------
+
+
+Workload : DMA
+Time : 115 seconds.
+Packet length : 50000
+Packets read : 2000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 869565 bytes/sec.
+--------------------------------------------------
+
+Workload : Copy
+Time : 117 seconds.
+Packet length : 50000
+Packets read : 2000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 854701 bytes/sec.
+--------------------------------------------------
+
+Workload : XOR
+Time : 116 seconds.
+Packet length : 50000
+Packets read : 2000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 862069 bytes/sec.
+--------------------------------------------------
+
+Workload : COBS
+Time : 116 seconds.
+Packet length : 50000
+Packets read : 2000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 862069 bytes/sec.
+--------------------------------------------------
+
+Workload : Rand
+Time : 115 seconds.
+Packet length : 50000
+Packets read : 2000
+(Empty packets : 0)
+--------------------------------------------------
+Bandwidth : 869565 bytes/sec.
+--------------------------------------------------
