@@ -27,22 +27,19 @@
 
 /* Private define ------------------------------------------------------------*/
 #define MSG_LEN     1024u                 // test message buffer length 
-#define BUFF_LEN    50000u                // message lenght limit
-#define BUFF_NUM       2u                 // how many packets buffers to maintain
+#define BUFF_LEN    50000u                // message lenght limit (50000 max tested)
 #define PACKET_LEN  1024u                 // packet of data size
 
 /* Private variables ---------------------------------------------------------*/
-uint8_t send_mode = 0u;                   // when send_mode==true send data
-uint8_t in_buff[MSG_LEN];                 // we take data from this buffer pretending it was received by some IO
-uint8_t usb_buff[BUFF_NUM][BUFF_LEN];     // buffer to store a messages to be sent by USB
+uint8_t send_mode = 1;                // when send_mode==true send data, set this to 1 if you want the program to send data immediatelly
+                                      // otherwise 0 to wait until usr button press
+uint8_t in_buff[MSG_LEN];             // we take data from this buffer pretending it was received by some IO
+uint8_t usb_buff[2][BUFF_LEN];        // buffer to store a messages to be sent by USB
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 void Other_Init();
-void write_to_buff(uint8_t *in_buff, int start, uint16_t len, uint8_t * targ_buff, int idx);
-//void XORed_msg(uint8_t * in_buff, uint16_t len, uint8_t targ_buff[BUFF_LEN][MSG_LEN], uint8_t idx, uint8_t * modif);
 int COBS_msg(uint8_t * in_buff, const int start, uint16_t len, uint8_t * targ_buff, const int idx);
-void LFSR(uint8_t * in_buff);
 
 /**
   * @brief  The application entry point.
@@ -70,18 +67,12 @@ int main(void){
     in_buff[i] = (uint8_t)(i/(uint8_t)((MSG_LEN/256u)+1));
   }
 
-  // Set initial state for lfsr
-  //uint8_t lfsr = 42u;
-  // sets last byte of in_buff to be the lfsr
-  //in_buff[MSG_LEN-1] = lfsr;
-
   /* Wait until first user button press --------------------------------------*/
   while (!send_mode) __NOP();
 
   /* Infinite loop -----------------------------------------------------------*/
   while (1){
     /* Get message from IO and write it to usb buffer */
-    //write_to_buff(in_buff, in_idx, PACKET_LEN, usb_buff[buff_select], buff_idx);
     i = COBS_msg(in_buff, in_idx, PACKET_LEN, usb_buff[buff_select], buff_idx);
     in_idx += PACKET_LEN;
     if(in_idx+PACKET_LEN>MSG_LEN) in_idx = 0u;
@@ -92,7 +83,6 @@ int main(void){
       busy = CDC_Transmit_FS(usb_buff[buff_select], buff_idx); // attempt to transmit
     }
     else{                                         // no more packets fit in buffer
-      //HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET);
       do{                                         // attempt to transmit
         busy = CDC_Transmit_FS(usb_buff[buff_select], buff_idx);
       }while(busy);                               // until usb is no longer busy
@@ -100,25 +90,19 @@ int main(void){
 
     if(!busy){                                    // if data started to transmit
       buff_idx=0u;                                // reset buffer write idx
-      if(++buff_select>=BUFF_NUM) buff_select = 0u;  // select the next buffer to write in
+      if(++buff_select>=2) buff_select = 0u;  // select the next buffer to write in
     }
-  }
-}
-
-/**
-  * @brief Write len bytes of the message in the in_buff to targ_buff
-  * read starting from read_idx, write starting from buff_idx
-  * @retval None
-  */
-void write_to_buff(uint8_t *in_buff, int start, uint16_t len, uint8_t * targ_buff, int idx){
-  for(int i=0; i<len ; i++){    
-    targ_buff[idx+i] = in_buff[i+start];
   }
 }
 
 /**
   * @brief Write len bytes of the message in the in_buff to targ_buff with Consistent Overhead Byte Stuffing
   * read starting from read_idx, write starting from buff_idx
+  * @param in_buff: input buffer
+  * @param read_idx: start reading from this index
+  * @param len: length of bytes to copy
+  * @param targ_buff: output buffer
+  * @param buff_idx: start writing from this index
   * @retval Number of bytes written to targ_buff
   */
 int COBS_msg(uint8_t * in_buff, const int read_idx, uint16_t len, uint8_t * targ_buff, const int buff_idx){
@@ -148,31 +132,6 @@ int COBS_msg(uint8_t * in_buff, const int read_idx, uint16_t len, uint8_t * targ
     targ_buff[write_index++] = 0u;
 
     return write_index-buff_idx;
-}
-
-/**
-  * @brief Advance the LFSR state by one step
-  * @retval None
-  */
-void LFSR(uint8_t * state){
-  uint8_t lfsr = *state;
-  uint8_t bit = ((lfsr >> 0) ^ (lfsr >> 2) ^ (lfsr >> 3) ^ (lfsr >> 4)) & 1u; // Taps: 8,6,5,4
-  *state = (lfsr >> 1) | (bit << 7);
-}
-
-/**
-  * @brief Xor every byte of the message with one modifier byte and write it to cicrular buffer
-  * @retval None
-  */
-void XORed_msg(uint8_t * in_buff, uint16_t len, uint8_t targ_buff[BUFF_LEN][MSG_LEN], uint8_t idx, uint8_t *modif){
-  int i;
-  for(i=0 ; i<len-1 ; i++){                     // xor with modif and copy every byte from in_buff to targ_buff
-    targ_buff[idx][i] = in_buff[i] ^ *modif;
-    in_buff[i] = targ_buff[idx][i];
-  }
-  targ_buff[idx][len-1] = *modif;               // set last byte of both to modif
-  in_buff[len-1] = *modif;
-  LFSR(modif);                                  // update lfsr state (modif)
 }
 
 /**

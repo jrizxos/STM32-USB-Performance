@@ -27,29 +27,29 @@
 
 /* Private define ------------------------------------------------------------*/
 #define MSG_LEN   1023    // message buffer length (50000 max tested)
-#define BUFF_LEN  2u      // 2, changing this makes no difference
 
 /* Private variables ---------------------------------------------------------*/
-uint8_t send_mode = 1u;                   // when send_mode==true send data
-uint8_t msg[MSG_LEN];                 // buffer to store and process the message before sending
-uint8_t circ_buff[BUFF_LEN][MSG_LEN]; // circular buffer to store a messages while being sent by USB
+uint8_t send_mode = 1;                // when send_mode==true send data, set this to 1 if you want the program to send data immediatelly
+                                      // otherwise 0 to wait until usr button press
+uint8_t msg_buff[MSG_LEN];            // buffer to store and process the message before sending
+uint8_t double_buff[2][MSG_LEN];      // circular buffer to store a messages while being sent by USB
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 void Other_Init();
-void write_to_buff(uint8_t * msg, uint32_t len, uint8_t targ_buff[BUFF_LEN][MSG_LEN], uint8_t idx);
-void XORed_msg(uint8_t * msg, uint32_t len, uint8_t targ_buff[BUFF_LEN][MSG_LEN], uint8_t idx, uint8_t * modif);
-void COBS_msg(uint8_t * msg, uint32_t len, uint8_t targ_buff[BUFF_LEN][MSG_LEN], uint8_t idx);
-void write_dma(uint32_t msg, uint32_t len, uint32_t targ_buff);
+void write_to_buff(uint8_t *msg_buff, uint32_t len, uint8_t * targ_buff);
+void XORed_msg(uint8_t * msg_buff, uint32_t len, uint8_t * targ_buff, uint8_t *modif);
+int COBS_msg(uint8_t * in_buff, const int start, uint16_t len, uint8_t * targ_buff, const int idx);
+void write_dma(uint32_t msg_buff, uint32_t len, uint32_t targ_buff);
 void rand_delay(uint8_t * state);
-void LFSR(uint8_t * msg);
+void LFSR(uint8_t * state);
 
 /**
   * @brief  The application entry point.
   * @retval int
   */
 int main(void){
-  uint8_t busy, buff_idx=0u;
+  uint8_t busy, buff_select=0u;
   uint32_t i;
 
   /* Enable I-Cache---------------------------------------------------------*/
@@ -66,60 +66,68 @@ int main(void){
 
   // Set initial state for lfsr
   uint8_t lfsr = 42u;
-  // Prepare bytes of data to send
+  // Prepare some bytes of data to send
   // fills buffer with bytes from 0 to 255, such that: buffer[i] >= buffer[i-1]
   for(i=0 ; i<MSG_LEN-1 ; i++){
-    msg[i] = (uint8_t)(i/(uint32_t)((MSG_LEN/256u)+1));
+    msg_buff[i] = (uint8_t)(i/(uint32_t)((MSG_LEN/256u)+1));
   }
-  // sets last byte of msg to be the lfsr
-  msg[MSG_LEN-1] = lfsr;
+  // sets last byte of msg_buff to be the lfsr
+  msg_buff[MSG_LEN-1] = lfsr;
+
   /* Infinite loop */
   while (1){
-    __NOP();                                          // loop gets stuck without this
-    if(send_mode){                                    // if user button has been toggled on
-      HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);     // start out pin processing msg signal
+    __NOP();                                          // loop gets stuck without a nop, due to a compiler optimization bug
+    if(send_mode){                                    // if user button has been pressed once
+      HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);     // set output pin that signals message processing
 
-      //write_dma((uint32_t) &msg, MSG_LEN, (uint32_t) &circ_buff[buff_idx]);
-      write_to_buff(msg, MSG_LEN, circ_buff, buff_idx);     // write to circular buffer
-      XORed_msg(msg, MSG_LEN, circ_buff, buff_idx,  &lfsr);   // alter the message and write to circular buffer
-      //COBS_msg(msg, (uint16_t)(254*(MSG_LEN-1)/255), circ_buff, buff_idx);
+      // select only one workload and uncomment
+      //write_dma((uint32_t) &msg_buff, MSG_LEN, (uint32_t) &double_buff[buff_select]);
+      //write_to_buff(msg_buff, MSG_LEN, double_buff[buff_select]);
+      XORed_msg(msg_buff, MSG_LEN, double_buff[buff_select], &lfsr);
+      //COBS_msg(msg_buff, 0, MSG_LEN, double_buff[buff_select], 0);
+
+      // uncomment to add some extra random delay 
       //rand_delay(&lfsr);
 
-      HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);   // stop out pin processing msg signal
+      HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);   // reset output pin that signals message processing
       do{                                         // attempt to send the message
-        busy = CDC_Transmit_FS(circ_buff[buff_idx], MSG_LEN);
+        busy = CDC_Transmit_FS(double_buff[buff_select], MSG_LEN);
       }while(busy);                               // until usb is no longer busy
       
-      if(buff_idx==BUFF_LEN-1) buff_idx = 0u;     // advance buffer index cyclically
-      else buff_idx++;
-      
+      if(++buff_select>=2) buff_select = 0u;  // select the next buffer to write in
     }
   }
 }
 
 /**
-  * @brief Write msg using DMA and wait until it's done
+  * @brief Write msg_buff using DMA and wait until it's done
+  * @param  msg_buff: input buffer
+  * @param  len: length of bytes to copy
+  * @param  targ_buff: output buffer 
   * @retval None
   */
-void write_dma(uint32_t msg, uint32_t len, uint32_t targ_buff){
-  extern uint8_t dma_done;  
+void write_dma(uint32_t msg_buff, uint32_t len, uint32_t targ_buff){
+  extern uint8_t dma_done;  // gets set in dma.c
   dma_done = 0u;
-  HAL_DMA_Start_IT(&hdma_memtomem_dma2_stream0, msg, targ_buff, MSG_LEN); // use DMA to write message to circular buffer
+  HAL_DMA_Start_IT(&hdma_memtomem_dma2_stream0, msg_buff, targ_buff, MSG_LEN); // use DMA to write message to circular buffer
 
-  while(!dma_done){
-    __NOP();
+  while(!dma_done){ // wait util DMA is done, the message is not ready to be sent
+    __NOP();        // here you could do something useful in a real aplication
   }
 
 }
 
 /**
-  * @brief Write msg, with length len, to position idx of buff
+  * @brief Copies len bytes from input buffer to output buffer
+  * @param  msg_buff: input buffer
+  * @param  len: length of bytes to copy
+  * @param  targ_buff: output buffer
   * @retval None
   */
-void write_to_buff(uint8_t *msg, uint32_t len, uint8_t targ_buff[BUFF_LEN][MSG_LEN], uint8_t idx){
+void write_to_buff(uint8_t *msg_buff, uint32_t len, uint8_t * targ_buff){
   int i;
   for(i=0 ; i<len ; i++){    
-    targ_buff[idx][i] = msg[i];
+    targ_buff[i] = msg_buff[i];
   }
 }
 
@@ -135,43 +143,60 @@ void LFSR(uint8_t * state){
 
 /**
   * @brief Xor every byte of the message with one modifier byte and write it to cicrular buffer
+  * @param  msg_buff: input buffer
+  * @param  len: length of bytes to copy
+  * @param  targ_buff: output buffer
+  * @param  modif: every copied byte gets XORed with this modifier
   * @retval None
   */
-void XORed_msg(uint8_t * msg, uint32_t len, uint8_t targ_buff[BUFF_LEN][MSG_LEN], uint8_t idx, uint8_t *modif){
+void XORed_msg(uint8_t * msg_buff, uint32_t len, uint8_t * targ_buff, uint8_t *modif){
   int i;
-  for(i=0 ; i<len-1 ; i++){                     // xor with modif and copy every byte from msg to targ_buff
-    targ_buff[idx][i] = msg[i] ^ *modif;
-    msg[i] = targ_buff[idx][i];
+  for(i=0 ; i<len-1 ; i++){                     // xor with modif and copy every byte from msg_buff to targ_buff
+    targ_buff[i] = msg_buff[i] ^ *modif;
+    msg_buff[i] = targ_buff[i];
   }
-  targ_buff[idx][len-1] = *modif;               // set last byte of both to modif
-  msg[len-1] = *modif;
+  targ_buff[len-1] = *modif;               // set last byte of both to modif
+  msg_buff[len-1] = *modif;
   LFSR(modif);                                  // update lfsr state (modif)
 }
 
 /**
-  * @brief Perform Consistent Overhead Byte Stuffing to the msg while writing it to targ_buff
-  *  !! provide len of data bytes to read from message such that [len + overhead stuffed bytes] <= MSG_LEN !!
-  * @retval None
+  * @brief Write len bytes of the message in the in_buff to targ_buff with Consistent Overhead Byte Stuffing
+  * read starting from read_idx, write starting from buff_idx
+  * @param in_buff: input buffer
+  * @param read_idx: start reading from this index
+  * @param len: length of bytes to copy
+  * @param targ_buff: output buffer
+  * @param buff_idx: start writing from this index
+  * @retval Number of bytes written to targ_buff
   */
-void COBS_msg(uint8_t * msg, uint32_t len, uint8_t targ_buff[BUFF_LEN][MSG_LEN], uint8_t idx){
+int COBS_msg(uint8_t * in_buff, const int read_idx, uint16_t len, uint8_t * targ_buff, const int buff_idx){
+    int read_index = read_idx;
+    int write_index = buff_idx;
+    int code_index = write_index++;
+    uint8_t code = 1;
 
-  uint8_t *encode = targ_buff[idx]; // Encoded byte pointer
-	uint8_t *codep = encode++; // Output code pointer
-	uint8_t code = 1; // Code value
+    while(read_index < read_idx+len){
+        if(in_buff[read_index] == 0){
+            targ_buff[code_index] = code;
+            code = 1;
+            code_index = write_index++;
+            read_index++;
+        }
+        else{
+            targ_buff[write_index++] = in_buff[read_index++];
+            code++;
+            if(code == 0xFF){
+                targ_buff[code_index] = code;
+                code = 1;
+                code_index = write_index++;
+            }
+        }
+    }
+    targ_buff[code_index] = code;
+    targ_buff[write_index++] = 0u;
 
-	for (const uint8_t *byte = (const uint8_t *)msg; len--; ++byte)
-	{
-		if (*byte) // Byte not zero, write it
-			*encode++ = *byte, ++code;
-
-		if (!*byte || code == 0xff) // Input is zero or block completed, restart
-		{
-			*codep = code, code = 1, codep = encode;
-			if (!*byte || len)
-				++encode;
-		}
-	}
-	*codep = code; // Write final code value
+    return write_index-buff_idx;
 }
 
 /**
@@ -184,7 +209,7 @@ void rand_delay(uint8_t * state){
 }
 
 /**
-  * @brief Initiates user button, it's interrupt and one led (for nucleo FZ767ZI)
+  * @brief Initiates user button, the button's interrupt and one led (for Nucleo FZ767ZI)
   * @retval None
   */
 void Other_Init(){
@@ -232,7 +257,7 @@ void Other_Init(){
   * @retval None
   */
 void EXTI15_10_IRQHandler(void) {
-  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13);
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13); // toggle blue led
 }
 
 /**
