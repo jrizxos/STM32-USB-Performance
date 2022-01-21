@@ -1,0 +1,102 @@
+Workload : DMA
+Packet length : 1023
+USB : 1.2	(mS)
+CPU : 41.2	(uS)
+
+Workload : Copy
+Packet length : 1023
+USB : 1.2	(mS)
+CPU : 19.7	(uS)
+
+Workload : XOR
+Packet length : 1023
+USB : 1.2	(mS)
+CPU : 39.63	(uS)
+
+Workload : COBS
+Packet length : 1023
+USB : 1.2	(mS)
+CPU : 65	(uS)
+
+Workload : Rand
+Packet length : 1023
+USB : 1.2	(mS)
+CPU : 7.5	(mS)
+
+
+Workload : XOR
+Packet length : 63
+USB : 358	(uS)
+CPU : 4.75	(uS)
+
+Workload : XOR
+Packet length : 64
+USB : 114.5	(uS)
+CPU : 4.75	(uS)
+
+Workload : XOR
+Packet length : 127
+USB : 418	(uS)
+CPU : 6.75	(uS)
+
+Workload : XOR
+Packet length : 128
+USB : 167	(uS)
+CPU : 6.75	(uS)
+
+Workload : XOR
+Packet length : 511
+USB : 768	(uS)
+CPU : 20	(uS)
+
+Workload : XOR
+Packet length : 512
+USB : 481	(uS)
+CPU : 20	(uS)
+
+Workload : XOR
+Packet length : 1023
+USB : 1.2	(mS)
+CPU : 37.5	(uS)
+
+Workload : XOR
+Packet length : 1024
+USB : 956	(uS)
+CPU : 41.0	(uS)
+
+Workload : XOR
+Packet length : 4095
+USB : 4.2	(mS)
+CPU : 20	(uS)
+
+Workload : XOR
+Packet length : 4096
+USB : 3.7	(mS)
+CPU : 20	(uS)
+
+Workload : XOR
+Packet length : 10000
+USB : 10	(mS)
+CPU : 450	(uS)
+
+Workload : XOR
+Packet length : 20000
+USB : 18.55	(mS)
+CPU : 762.5	(uS)
+
+Workload : XOR
+Packet length : 30000
+USB : 27.05	(mS)
+CPU : 1.15	(mS)
+
+Workload : XOR
+Packet length : 40000
+USB : 33.55	(mS)
+CPU : 1.55	(mS)
+
+Workload : XOR
+Packet length : 50000
+USB : 44	(mS)
+CPU : 1.85	(mS)
+
+

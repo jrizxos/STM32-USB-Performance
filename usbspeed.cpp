@@ -1,3 +1,5 @@
+// part of the code is from https://www.dreamincode.net/forums/topic/148707-introduction-to-using-libusb-10/
+
 #include <iostream>
 #include <iomanip>
 #include <time.h>
@@ -5,7 +7,7 @@
 using namespace std;
 
 void printdev(libusb_device* dev);
-int receive(libusb_device_handle* dev_handle, int msg_length, int msg_limit);
+int recieve(libusb_device_handle* dev_handle, int msg_length, int msg_limit);
 int readprint(libusb_device_handle* dev_handle, int msg_length, int msg_limit);
 int readmeasure(libusb_device_handle* dev_handle, int msg_length, int msg_limit);
 int cobsdecode(unsigned char* buffer, int length, unsigned char* data);
@@ -71,8 +73,8 @@ int main() {
 
 	// read data using only one of the following methods
 	//r = readprint(dev_handle, 1023, 2);   // reads an prints every message until limit, be careful with printing long messages! (suitable for continous transmit)
-	//r = readmeasure(dev_handle, 1023, 2);	// reads every message until limit then calculates and prints performance stats (suitable for continous transmit)
-	r = receive(dev_handle, 50000, 2);		// receives messages that contain COBS encoded packets (suitable for continous transmit optimized)
+	r = readmeasure(dev_handle, 50000, 1000000);	// reads every message until limit then calculates and prints performance stats (suitable for continous transmit)
+	//r = recieve(dev_handle, 50000, 2);		// receives messages that contain COBS encoded packets (suitable for continous transmit optimized)
 	
 	//release the claimed interfaces, and close the device
 	libusb_release_interface(dev_handle, 0); 
@@ -89,11 +91,11 @@ int main() {
   * @param msg_limit: maximum ammount of messages to read
   * @retval 0 is OK, >0 is error
   */
-int receive(libusb_device_handle* dev_handle, int msg_length, int msg_limit){
+int recieve(libusb_device_handle* dev_handle, int msg_length, int msg_limit){
 	int actual, r;											//read byte counter
 	time_t start_time, end_time;							//time counters
 	double timer;
-	int msg_count = 0;										//number of messages we received
+	int msg_count = 0;										//number of messages we recieved
 	int empty_packets = 0;									//number of empty packets
 	const unsigned int timeout = 100000u;					//max time to read a message (ms)
 	const unsigned char endpoint = 129u;					//endpoint address to read from
@@ -193,7 +195,7 @@ int cobsdecode(unsigned char* buffer, int length, unsigned char* data){
   */
 int readprint(libusb_device_handle* dev_handle, int msg_length, int msg_limit){
 	int actual, r;											//read byte counter
-	int msg_count = 0;										//number of messages we received
+	int msg_count = 0;										//number of messages we recieved
 	int empty_packets = 0;									//number of empty packets (when packet length = 64 one empty is send after)
 	const unsigned int timeout = 10000u;					//max time to read a message (ms)
 	const unsigned char endpoint = 129u;					//endpoint address to read from
@@ -240,15 +242,15 @@ int readmeasure(libusb_device_handle* dev_handle, int msg_length, int msg_limit)
 	int actual, r;												//read byte counter
 	time_t start_time, end_time;								//time counters
 	double timer;
-	int msg_count = 0;											//number of messages we received
+	int msg_count = 0;											//number of messages we recieved
 	int empty_packets = 0;										//number of empty packets
 	const unsigned int timeout = 10000u;						//max time to read a message (ms)
 	const unsigned char endpoint = 129u;						//endpoint address to read from
 	unsigned char* data = new unsigned char[msg_length];		//data to read buffer 
 	//allocate memory to keep all read packets so we can check them after the transmission
-	unsigned char** data_array = new unsigned char*[msg_limit];
-	for (int i = 0; i < msg_limit; i++)
-		data_array[i] = new unsigned char[msg_length];
+	//unsigned char** data_array = new unsigned char*[msg_limit];
+	//for (int i = 0; i < msg_limit; i++)
+	//	data_array[i] = new unsigned char[msg_length];
 	
 	cout << "Reading Data..." << endl ;
 	time(&start_time);
