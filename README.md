@@ -33,4 +33,5 @@ On the microprocessor programs you can edit the sent message size and included p
 ## Notes
 It is important to note that we have changed the definition of the *CDC_Transmit_FS* function in *usbd_cdc_if.c*: the *Len* parameter was defined as uint16_t but the USB message length register of F767zi can hold up to 19 bits for size, thus we changed it to a uint32_t. *Len* started off as a 16 bit value to restrict the maximum length and then would get casted to 32 bits before the 19 least significant bits get copied with a mask. Refer to your microprocessor's manual to see wether this change can be applied to it, there might be a slight chance you need to change the parameter definition back to uint16_t or even uint8_t.
 
-For more information please refer to my assignment, *Chapter 3* describes the methodology and code used, *Chapter 4* presents the results of the measurements and *Chapter 5* describes the *USB_Continuous_Transmit_Optimized:* program <ins>Link TBA</ins>
+For more information please refer to this document: <ins>Link TBA</ins><br>
+*Chapter 3* describes the methodology and code used, *Chapter 4* presents the results of the measurements and *Chapter 5* describes the *USB_Continuous_Transmit_Optimized* program.
